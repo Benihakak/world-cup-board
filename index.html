@@ -23,8 +23,9 @@
       radial-gradient(900px 600px at 50% 120%,rgba(62,224,164,.10),transparent 60%),
       var(--bg);
     color:var(--txt);min-height:100vh;line-height:1.5;-webkit-font-smoothing:antialiased;
-    padding-bottom:80px;
+    padding-bottom:80px;overflow-x:hidden;
   }
+  html{-webkit-text-size-adjust:100%}
   .heb{direction:rtl;unicode-bidi:isolate;font-family:"Noto Sans Hebrew","SF Pro Display",sans-serif}
   .num,.nm-en{unicode-bidi:isolate;font-variant-numeric:tabular-nums}
   .iso{unicode-bidi:isolate}
@@ -267,13 +268,37 @@
     .twrap{display:none} .tcards{display:block}
     .simwrap{grid-template-columns:1fr} .simboard{position:static}
   }
+  /* ---- mobile nav: brand on its own row, tabs become a swipeable single-row strip ---- */
+  @media(max-width:760px){
+    .nav-in{flex-wrap:nowrap;flex-direction:column;align-items:stretch;gap:9px;padding:10px 12px}
+    .brand{font-size:16px;gap:9px}
+    .brand .ball{font-size:21px}
+    .tabs{margin-right:0;flex-wrap:nowrap;overflow-x:auto;gap:6px;
+      -webkit-overflow-scrolling:touch;scrollbar-width:none;
+      scroll-snap-type:x proximity;padding-bottom:2px;
+      -webkit-mask-image:linear-gradient(90deg,transparent,#000 16px,#000 calc(100% - 16px),transparent);
+      mask-image:linear-gradient(90deg,transparent,#000 16px,#000 calc(100% - 16px),transparent)}
+    .tabs::-webkit-scrollbar{display:none}
+    .tab{flex:0 0 auto;scroll-snap-align:start;padding:8px 13px;font-size:13px}
+  }
   @media(max-width:560px){
     .podium{grid-template-columns:1fr;gap:10px}.pod.p1{transform:none}
     .insights{grid-template-columns:1fr}.grid.c3{grid-template-columns:1fr}
     .lbrow .bar{display:none} .grpgrid{grid-template-columns:1fr}
+    .lbrow{gap:10px;padding:12px 13px}.lbrow .who{min-width:0}
     section{padding:22px 0 6px} .sec-head{margin-bottom:14px}
     .sec-head h2{font-size:21px} .sec-head p{font-size:12.5px;max-width:none}
-    main{padding:8px 14px} .card{padding:13px 13px} .rule{font-size:11px;padding:5px 9px}
+    main{padding:8px 13px} .card{padding:13px 13px} .rule{font-size:11px;padding:5px 9px}
+    header{padding:26px 13px 8px}
+    h1{font-size:26px} .eyebrow{font-size:11px}
+  }
+  @media(max-width:420px){
+    .brand small{font-size:9.5px}
+    .lbrow .who{font-size:15px}.lbrow .pts{font-size:18px;width:36px}
+    .lbrow .rk{width:26px;height:26px;font-size:13px}
+    .tab{padding:7px 11px;font-size:12.5px}
+    h1{font-size:23px}
+    .keb,.tcg span,.rule{font-size:10.5px}
   }
 </style>
 </head>
