@@ -235,7 +235,7 @@
   .market-panel{display:grid;grid-template-columns:1.35fr .65fr;gap:16px;align-items:start}.market-games{display:grid;gap:10px}.market-game{background:linear-gradient(160deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:14px;padding:13px}.market-game .mg-head{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:9px}.market-game .mg-title{font-weight:850;font-size:13.5px}.market-game .mg-kind{font-size:11px;color:var(--mut2)}
   .market-controls{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}.market-controls label{font-size:10.5px;font-weight:800;color:var(--mut2);display:grid;gap:3px}.market-controls input,.market-controls select,.market-json textarea{width:100%;border:1px solid var(--line);border-radius:9px;background:#0b1324;color:var(--txt);padding:7px 8px;font-family:inherit;font-size:12.5px}.market-controls input:focus,.market-controls select:focus,.market-json textarea:focus{outline:2px solid var(--gold);outline-offset:1px}.market-controls .source{grid-column:span 2}.market-json{position:sticky;top:78px;background:linear-gradient(160deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:15px;padding:14px}.market-json textarea{min-height:170px;resize:vertical;direction:ltr;text-align:left;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}.market-actions{display:flex;gap:7px;flex-wrap:wrap;margin:9px 0}
   .update-list{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}.update-item{background:rgba(255,255,255,.035);border:1px solid var(--line);border-radius:12px;padding:11px;font-size:12px;color:var(--mut);line-height:1.55}.update-item b{color:var(--txt)}
-  .scope-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:10px 0 18px}.scope-card{background:linear-gradient(160deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:14px;padding:13px}.scope-card .scn{font-size:25px;font-weight:900;color:var(--gold);font-variant-numeric:tabular-nums}.scope-card .scl{font-size:12px;font-weight:800;color:var(--txt)}.scope-card .sch{font-size:11.5px;color:var(--mut);line-height:1.45;margin-top:4px}.field-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.field-chip{font-size:11px;color:var(--mut);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:4px 8px}.field-chip.live{color:var(--grn);border-color:rgba(62,224,164,.25)}.field-chip.wait{color:var(--amber);border-color:rgba(255,180,67,.25)}
+  .why-list{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 8px 44px;padding-bottom:7px;border-bottom:1px dashed rgba(255,255,255,.06)}.why-list small{color:var(--mut2);font-weight:650;margin-right:4px}.projection-board .srow+.why-list:last-child{border-bottom:none}.proj-breakdown{display:flex;flex-wrap:wrap;gap:5px;margin:-2px 0 7px 44px}.proj-breakdown span{font-size:10.5px;font-weight:800;color:var(--mut2);background:rgba(255,255,255,.035);border:1px solid var(--line);border-radius:7px;padding:2px 7px}.confidence{font-size:9.5px;font-weight:900;color:#07101d;background:var(--gold);border-radius:99px;padding:1px 5px;margin-right:5px}.confidence.live{background:var(--grn)}.confidence.pace{background:var(--amber)}.confidence.partial{background:var(--blue);color:#fff}.confidence.identity{background:var(--violet);color:#fff}.precision-list{display:grid;gap:8px;margin-top:10px}.precision-item{font-size:12px;color:var(--mut);line-height:1.5;background:rgba(255,255,255,.035);border:1px solid var(--line);border-radius:10px;padding:8px 10px}.precision-item b{color:var(--txt)}.scope-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:10px 0 18px}.scope-card{background:linear-gradient(160deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:14px;padding:13px}.scope-card .scn{font-size:25px;font-weight:900;color:var(--gold);font-variant-numeric:tabular-nums}.scope-card .scl{font-size:12px;font-weight:800;color:var(--txt)}.scope-card .sch{font-size:11.5px;color:var(--mut);line-height:1.45;margin-top:4px}.field-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.field-chip{font-size:11px;color:var(--mut);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:4px 8px}.field-chip.live{color:var(--grn);border-color:rgba(62,224,164,.25)}.field-chip.wait{color:var(--amber);border-color:rgba(255,180,67,.25)}
   /* head to head agreement */
   .h2hgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:13px}
   .h2hcard{background:linear-gradient(160deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:14px;padding:15px}
@@ -502,9 +502,69 @@ if(!RECON) console.error('RECONCILIATION FAILED', P.map(p=>[p.name,CUR_BY_NAME[p
 const ORDER=BASE_STANDINGS.map(s=>s.name);
 
 /* ============ 1. PROJECTION COCKPIT ============ */
-const MARKET_STORAGE_KEY='worldCupMarketPredictions:v1';
-const DEFAULT_MARKET_SOURCE='ידני';
+const MARKET_STORAGE_KEY='worldCupMarketPredictions:v2';
+const FACTS_STORAGE_KEY='worldCupProjectionFacts:v2';
+const DEFAULT_MARKET_SOURCE='אתר הימורים / תחזית';
+const TOTAL_TOURNAMENT_MATCHES_EX_FINAL=103;
 let marketPredictions=loadMarketPredictions();
+let projectionFacts;
+
+const TEAM_GROUPS={};
+Object.entries(P[0].groupPredictions||{}).forEach(([g,arr])=>(arr||[]).forEach(t=>{TEAM_GROUPS[normTeam(t)]=g;}));
+const GROUP_LABELS={A:'A',B:'B',C:'C',D:'D',E:'E',F:'F',G:'G',H:'H',I:'I',J:'J',K:'K',L:'L'};
+const STAT_POINTS={
+  team_scores_most:2,team_scores_least:2,team_concedes_least:2,team_concedes_most:2,
+  team_finish_9_points:2,team_finish_0_points:2,group_most_goals:2,group_least_goals:2,
+  team_most_yellows:3,team_least_yellows:3,
+  goals_round_of_32:2,goals_round_of_16:2,goals_quarter_finals:2,games_to_extra_time:2,games_to_penalties:2,
+  own_goals:3,red_cards:3,penalties:3,total_goals:3,
+  furthest_african:2,furthest_asian:2,furthest_concacaf:2
+};
+const TEAM_STAT_KEYS=['team_scores_most','team_scores_least','team_concedes_least','team_concedes_most','team_finish_9_points','team_finish_0_points','group_most_goals','group_least_goals','team_most_yellows','team_least_yellows','furthest_african','furthest_asian','furthest_concacaf'];
+const NUMERIC_STAT_KEYS=['goals_round_of_32','goals_round_of_16','goals_quarter_finals','games_to_extra_time','games_to_penalties','own_goals','red_cards','penalties','total_goals'];
+const STAT_LABELS={};
+const FACT_ALIASES={
+  'lionel messi':['מסי','messi','lionel messi'],
+  'jonathan david':['דיוויד','דויד','david','jonathan david'],
+  'chris wood':['כריס ווד','ווד','wood','chris wood'],
+  'alexander isak':['איסאק','איזאק','isak','alexander isak'],
+  'joshua kimmich':['קימיך','kimmich','joshua kimmich'],
+  'ryan gravenberch':['חראפנברך','גרבנברך','gravenberch','ryan gravenberch'],
+  'deniz undav':['אונדב','undav','deniz undav'],
+  'kylian mbappe':['אמבפה','mbappe','kylian mbappe'],
+  'harry kane':['קיין','kane','harry kane'],
+  'lamine yamal':['ימאל','יאמל','yamal','lamine yamal'],
+  'bruno fernandes':['ברונו פ','ברונו פרננדש','bruno fernandes','bruno f'],
+  'south africa':['ד.אפריקה','ד. אפריקה','דרום אפריקה','south africa'],
+  'qatar':['קטאר','qatar'],
+  'curacao':['קוראסאו','קורסאו','curaçao','curacao'],
+  'jordan':['ירדן','jordan'],
+  'morocco':['מרוקו','morocco'],
+  'new zealand':['ניו זילנד','נ זילנד','new zealand'],
+  'senegal':['סנגל','senegal'],
+  'australia':['אוסטרליה','australia'],
+  'japan':['יפן','japan'],
+  'algeria':['אלגיריה','אלג׳יריה','algeria'],
+  'germany':['גרמניה','germany'],
+  'france':['צרפת','france'],
+  'croatia':['קרואטיה','croatia'],
+  'sweden':['שבדיה','שוודיה','sweden'],
+  'norway':['נורווגיה','נורבגיה','norway'],
+  'england':['אנגליה','england'],
+  'uruguay':['אורוגוואי','אורוגואי','uruguay'],
+  'argentina':['ארגנטינה','argentina']
+};
+function factNorm(s){return String(s||'').toLowerCase().trim().replace(/[׳’']/g,'').replace(/[״"]/g,'').replace(/\s+/g,' ');}
+function factKeys(v){
+  const n=factNorm(v), keys=new Set([n,normTeam(v).toLowerCase()]);
+  Object.entries(FACT_ALIASES).forEach(([canon,vals])=>{
+    const all=[canon].concat(vals).map(factNorm);
+    if(all.includes(n) || all.includes(normTeam(v).toLowerCase())) all.forEach(x=>keys.add(x));
+  });
+  return keys;
+}
+(P[0].tournamentLong||[]).forEach(r=>STAT_LABELS[r.key]=r.label);
+STAT_LABELS.topScorer='מלך שערים'; STAT_LABELS.topAssists='מלך בישולים'; STAT_LABELS.champion='זוכה'; STAT_LABELS.runnerUp='סגנית'; STAT_LABELS.finalScore='תוצאת גמר';
 
 function blankMarketPrediction(g){
   const k=kindOf(g.betType);
@@ -513,7 +573,7 @@ function blankMarketPrediction(g){
 function loadMarketPredictions(){
   const base={}; UPC.forEach(g=>base[g.gameIndex]=blankMarketPrediction(g));
   try{
-    const raw=localStorage.getItem(MARKET_STORAGE_KEY);
+    const raw=localStorage.getItem(MARKET_STORAGE_KEY) || localStorage.getItem('worldCupMarketPredictions:v1');
     if(raw){
       const parsed=JSON.parse(raw);
       const arr=Array.isArray(parsed)?parsed:(Array.isArray(parsed.predictions)?parsed.predictions:[]);
@@ -525,7 +585,6 @@ function loadMarketPredictions(){
 function saveMarketPredictions(){
   try{localStorage.setItem(MARKET_STORAGE_KEY,JSON.stringify(Object.values(marketPredictions)));}catch(e){console.warn('market prediction save failed',e);}
 }
-function marketJson(){ return JSON.stringify(Object.values(marketPredictions),null,2); }
 function resultForMarketPrediction(g,pred){
   if(!pred) return null;
   const k=kindOf(g.betType);
@@ -540,46 +599,217 @@ function resultForMarketPrediction(g,pred){
   }
   return null;
 }
-function consensusResultForGame(g){
-  const k=kindOf(g.betType), bets=P.map(p=>p.matchBets.find(b=>b.gameIndex===g.gameIndex)).filter(Boolean);
-  if(k==='winner'){
-    const scores={}, outcomes={};
-    bets.forEach(b=>{
-      outcomes[b.pick]=(outcomes[b.pick]||0)+1;
-      if(b.predGoalsA!=null&&b.predGoalsB!=null){const key=b.predGoalsA+'-'+b.predGoalsB;scores[key]=(scores[key]||0)+1;}
-    });
-    const topScore=Object.entries(scores).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]))[0];
-    const topOutcome=Object.entries(outcomes).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]))[0];
-    if(topScore){const [a,b]=topScore[0].split('-').map(Number);return {goalsA:a,goalsB:b,outcome:outcomeFromScore(a,b),votes:topScore[1],label:topScore[0],fallbackOutcome:topOutcome&&topOutcome[0]};}
-    if(topOutcome) return {outcome:topOutcome[0],votes:topOutcome[1],label:topOutcome[0]};
-  } else {
-    const picks={}; bets.forEach(b=>{picks[b.pick]=(picks[b.pick]||0)+1;});
-    const top=Object.entries(picks).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]))[0];
-    if(top) return k==='ou'?{ouActual:top[0],votes:top[1],label:top[0]}:{outcome:top[0],votes:top[1],label:top[0]};
-  }
-  return null;
-}
-function projectionMap(mode){
+function matchForecastMap(){
   const map=Object.assign({},PLAYED), missing=[];
   UPC.forEach(g=>{
-    const res=mode==='market'?resultForMarketPrediction(g,marketPredictions[g.gameIndex]):consensusResultForGame(g);
+    const res=resultForMarketPrediction(g,marketPredictions[g.gameIndex]);
     if(res) map[g.gameIndex]=res; else missing.push(g);
   });
   return {map,missing};
 }
-function projectedStandings(mode){
-  const {map,missing}=projectionMap(mode);
-  return {standings:computeStandings(map),missing};
+function extractTeamPair(teams){
+  const pair=String(teams||'').split('/')[0].split('-').map(x=>x.trim()).filter(Boolean);
+  return pair.length>=2?[pair[0],pair[1]]:null;
 }
-function projectionBoardHtml(standings,missing,mode){
-  const baseRank={}; BASE_STANDINGS.forEach(s=>baseRank[s.name]=s.rank);
-  const full=missing.length===0;
-  return `<div class="projection-board" aria-live="polite">${standings.map(s=>{
-    const dr=baseRank[s.name]-s.rank, cls=dr>0?'up':dr<0?'down':'same', sym=dr>0?'▲'+dr:dr<0?'▼'+(-dr):'–';
-    const add=s.points-CUR_BY_NAME[s.name];
-    return `<div class="srow ${s.rank===1?'winner lead':''} ${!full&&mode==='market'?'incomplete':''}">
-      <span class="srk num">${s.rank}</span><span class="sn heb">${iso(s.name)}</span><span class="delta ${cls} num">${sym}</span><span class="sp num">${s.points}${add>0?` <span style="font-size:11px;color:var(--grn)">+${add}</span>`:''}</span>
-    </div>`;
+function parseNoteMatches(note){
+  const out=[];
+  String(note||'').split('|').forEach(part=>{
+    const m=part.trim().match(/^(.+?)\s+(\d+)\s*-\s*(\d+)\s+(.+?)(?:\s*\(|$)/);
+    if(m) out.push({teamA:m[1].trim(),teamB:m[4].trim(),goalsA:+m[2],goalsB:+m[3]});
+  });
+  return out;
+}
+function extractActualMatches(){
+  const matches=[];
+  RES.forEach(r=>{
+    const pair=extractTeamPair(r.teams);
+    if(pair&&r.goalsA!=null&&r.goalsB!=null){
+      matches.push({gameIndex:r.gameIndex,teamA:pair[0],teamB:pair[1],goalsA:r.goalsA,goalsB:r.goalsB,group:r.group||groupForTeam(pair[0])});
+    }
+    parseNoteMatches(r.note).forEach(m=>matches.push(Object.assign({gameIndex:r.gameIndex,group:groupForTeam(m.teamA)},m)));
+  });
+  return matches;
+}
+function groupForTeam(team){return TEAM_GROUPS[normTeam(team)]||'';}
+function computeCurrentStats(){
+  const teams={}, groups={};
+  function ensure(team){const key=normTeam(team); if(!teams[key]) teams[key]={team,group:groupForTeam(team),games:0,pts:0,gf:0,ga:0,gd:0}; return teams[key];}
+  ACTUAL_MATCHES.forEach(m=>{
+    const a=ensure(m.teamA), b=ensure(m.teamB), g=m.group||a.group||b.group;
+    a.games++; b.games++; a.gf+=m.goalsA; a.ga+=m.goalsB; b.gf+=m.goalsB; b.ga+=m.goalsA;
+    if(m.goalsA>m.goalsB){a.pts+=3;} else if(m.goalsA<m.goalsB){b.pts+=3;} else {a.pts++; b.pts++;}
+    a.gd=a.gf-a.ga; b.gd=b.gf-b.ga;
+    if(g){groups[g]=groups[g]||{group:g,goals:0,matches:0}; groups[g].goals+=m.goalsA+m.goalsB; groups[g].matches++;}
+  });
+  return {teams,groups};
+}
+const ACTUAL_MATCHES=extractActualMatches();
+const CURRENT_STATS=computeCurrentStats();
+projectionFacts=loadProjectionFacts();
+function rankedCurrentTeams(){
+  return Object.values(CURRENT_STATS.teams).sort((a,b)=>b.pts-a.pts||b.gd-a.gd||b.gf-a.gf||a.ga-b.ga||a.team.localeCompare(b.team,'he'));
+}
+function currentGroupOrders(){
+  const grouped={};
+  Object.values(CURRENT_STATS.teams).forEach(t=>{if(!t.group)return;(grouped[t.group]=grouped[t.group]||[]).push(t);});
+  Object.keys(grouped).forEach(g=>grouped[g].sort((a,b)=>b.pts-a.pts||b.gd-a.gd||b.gf-a.gf||a.ga-b.ga||a.team.localeCompare(b.team,'he')));
+  return grouped;
+}
+function leadersBy(metric,asc=false){
+  const rows=Object.values(CURRENT_STATS.teams).filter(t=>t.games>0);
+  if(!rows.length) return [];
+  const val=asc?Math.min(...rows.map(t=>t[metric])):Math.max(...rows.map(t=>t[metric]));
+  return rows.filter(t=>t[metric]===val).map(t=>t.team);
+}
+function groupLeadersBy(asc=false){
+  const rows=Object.values(CURRENT_STATS.groups).filter(g=>g.matches>0);
+  if(!rows.length) return [];
+  const val=asc?Math.min(...rows.map(g=>g.goals)):Math.max(...rows.map(g=>g.goals));
+  return rows.filter(g=>g.goals===val).map(g=>g.group);
+}
+function paceTotalGoals(){
+  const goals=ACTUAL_MATCHES.reduce((s,m)=>s+m.goalsA+m.goalsB,0);
+  if(!ACTUAL_MATCHES.length) return GT.numericActuals&&GT.numericActuals.total_goals;
+  return Math.round(goals/ACTUAL_MATCHES.length*TOTAL_TOURNAMENT_MATCHES_EX_FINAL);
+}
+function defaultProjectionFacts(){
+  return {
+    topScorer:['ג׳ונתן דייוויד','ליאו מסי'],
+    topAssists:['כריס ווד','אלכסנדר איסאק','יוזואה קימיך','ראיין חראפנברך','דניז אונדב'],
+    champion:'', runnerUp:'', finalScore:'',
+    teamMostYellows:'', teamLeastYellows:'', furthestAfrican:'', furthestAsian:'', furthestConcacaf:'',
+    projectedCounts:Object.assign({},GT.numericActuals||{},{total_goals:paceTotalGoals()}),
+    sourceNote:'עודכן 20.06.2026: ESPN/FIFA/FotMob — מלכי שערים/בישולים; ESPN discipline — מספר אדומים.',
+    note:'נתונים שאין בקובץ: צהובים, יבשות, זוכה/סגנית אם רוצים להריץ תרחיש.'
+  };
+}
+function loadProjectionFacts(){
+  const base=defaultProjectionFacts();
+  try{
+    const raw=localStorage.getItem(FACTS_STORAGE_KEY);
+    if(raw){
+      const parsed=JSON.parse(raw);
+      const merged=Object.assign({},base,parsed,{projectedCounts:Object.assign({},base.projectedCounts,parsed.projectedCounts||{})});
+      ['topScorer','topAssists'].forEach(k=>{if(!factValues(merged[k]).length) merged[k]=base[k];});
+      return merged;
+    }
+  }catch(e){console.warn('projection facts load failed',e);}
+  return base;
+}
+function saveProjectionFacts(){
+  try{localStorage.setItem(FACTS_STORAGE_KEY,JSON.stringify(projectionFacts));}catch(e){console.warn('projection facts save failed',e);}
+}
+function longPick(player,key){const row=(player.tournamentLong||[]).find(x=>x.key===key); return row?row.pick:null;}
+function asArray(v){return Array.isArray(v)?v:(v==null||v===''?[]:[v]);}
+function factValues(v){
+  if(Array.isArray(v)) return v.flatMap(factValues).filter(Boolean);
+  if(v==null||v==='') return [];
+  return String(v).split(/\s*(?:\/|,|\||;|،)\s*/).map(x=>x.trim()).filter(Boolean);
+}
+function factText(v){ return factValues(v).join(' / '); }
+function anyMatch(pick,values){
+  if(pick==null||pick==='') return false;
+  const pk=factKeys(pick);
+  return factValues(values).some(v=>{const vk=factKeys(v); return [...pk].some(k=>vk.has(k));});
+}
+function closestNamesForNumeric(key,value){
+  if(value==null||value===''||Number.isNaN(Number(value))) return [];
+  const rows=P.map(p=>({name:p.name,pick:longPick(p,key)})).filter(r=>typeof r.pick==='number');
+  if(!rows.length) return [];
+  const target=Number(value), best=Math.min(...rows.map(r=>Math.abs(r.pick-target)));
+  return rows.filter(r=>Math.abs(r.pick-target)===best).map(r=>r.name);
+}
+function addReason(list,pts,label,detail,type){ if(pts>0) list.push({pts,label,detail:String(detail||''),type:type||'stat'}); }
+function reasonLabel(type){return {live:'ודאי',partial:'חלקי',group:'בתים',stat:'עובדה',pace:'קצב',identity:'זהות',match:'משחק'}[type]||'תחזית';}
+function reasonClass(type){return ['live','partial','pace','identity'].includes(type)?type:'';}
+function sumReasonType(reasons,type){return (reasons||[]).filter(r=>r.type===type).reduce((s,r)=>s+r.pts,0);}
+function projectionBreakdownHtml(row){
+  const buckets=[['live','עובדות'],['partial','חלקי'],['group','בתים'],['stat','מדדי קבוצות'],['pace','קצב/מספרים'],['identity','זהויות'],['match','משחקים']];
+  const chips=buckets.map(([type,label])=>[label,sumReasonType(row.reasons,type)]).filter(x=>x[1]>0).map(([label,pts])=>`<span class="heb">${label}: +${pts}</span>`).join('');
+  return chips?`<div class="proj-breakdown">${chips}</div>`:'';
+}
+function projectionReasonHtml(r){
+  const cls=reasonClass(r.type), tag=reasonLabel(r.type);
+  return `<span class="ddelta up heb"><em class="confidence ${cls}">${esc(tag)}</em>+${r.pts} ${esc(r.label)} <small>${esc(r.detail)}</small></span>`;
+}
+function groupProjectionMeta(rows){
+  const teamsPlayed=rows.length, matches=Math.round(rows.reduce((s,r)=>s+r.games,0)/2);
+  if(teamsPlayed>=4) return {top2Pts:3,orderPts:3,type:'group',detail:`${teamsPlayed} נבחרות ו-${matches} משחקים בבית — יחסית יציב יותר`} ;
+  return {top2Pts:1,orderPts:0,type:'partial',detail:`מדגם חלקי: ${teamsPlayed} נבחרות ו-${matches} משחקים בלבד`} ;
+}
+function teamStatMeta(key){
+  if(['team_finish_9_points','team_finish_0_points'].includes(key)) return {type:'pace',ptsFactor:.5,detail:'מבוסס קצב נקודות נוכחי, לא תוצאה סופית'};
+  if(['group_most_goals','group_least_goals'].includes(key)) return {type:'partial',ptsFactor:1,detail:'מבוסס שערים שנכבשו עד עכשיו בבית'};
+  return {type:'stat',ptsFactor:1,detail:'מוביל לפי המשחקים שכבר שוחקו'};
+}
+function numericProjectionMeta(key){
+  const counts=projectionFacts.projectedCounts||{};
+  if(key==='total_goals') return {value:paceTotalGoals(),type:'pace',detail:`קצב שערים נוכחי מ-${ACTUAL_MATCHES.length} משחקים`} ;
+  if(key==='red_cards'&&counts[key]!=null&&counts[key]!==''&&!Number.isNaN(Number(counts[key]))) return {value:counts[key],type:'live',detail:'מספר אדומים ידוע כרגע'};
+  return null;
+}
+function teamStatFacts(){
+  return {
+    team_scores_most:leadersBy('gf'),
+    team_scores_least:leadersBy('gf',true),
+    team_concedes_least:leadersBy('ga',true),
+    team_concedes_most:leadersBy('ga'),
+    team_finish_9_points:rankedCurrentTeams().filter(t=>t.games>0&&t.pts/t.games===3).map(t=>t.team),
+    team_finish_0_points:rankedCurrentTeams().filter(t=>t.games>0&&t.pts===0).map(t=>t.team),
+    group_most_goals:groupLeadersBy(false),
+    group_least_goals:groupLeadersBy(true),
+    team_most_yellows:projectionFacts.teamMostYellows,
+    team_least_yellows:projectionFacts.teamLeastYellows,
+    furthest_african:projectionFacts.furthestAfrican,
+    furthest_asian:projectionFacts.furthestAsian,
+    furthest_concacaf:projectionFacts.furthestConcacaf
+  };
+}
+function provisionalProjectionRows(includeMatchForecasts){
+  const teamFacts=teamStatFacts(), groupOrders=currentGroupOrders(), countFacts=projectionFacts.projectedCounts||{};
+  const forecast=matchForecastMap();
+  return P.map(p=>{
+    let total=CUR_BY_NAME[p.name];
+    const reasons=[];
+    if(includeMatchForecasts){
+      UPC.forEach(g=>{
+        const res=forecast.map[g.gameIndex], bet=p.matchBets.find(b=>b.gameIndex===g.gameIndex);
+        if(res&&bet){const pts=scoreBet(bet,res); total+=pts; addReason(reasons,pts,`משחק #${g.gameIndex}`,`${teamsOf(g.gameIndex)} · ${resultLabel(g,res)}`,'match');}
+      });
+    }
+    Object.entries(groupOrders).forEach(([g,rows])=>{
+      const pred=(p.groupPredictions||{})[g]||[], currentTop2=rows.slice(0,2).map(x=>normTeam(x.team)), meta=groupProjectionMeta(rows);
+      pred.slice(0,2).forEach(team=>{if(currentTop2.includes(normTeam(team))){total+=meta.top2Pts;addReason(reasons,meta.top2Pts,`בית ${g}`,`${team} כרגע בטופ 2 · ${meta.detail}`,meta.type);}});
+      if(meta.orderPts&&rows.length>=4&&pred.length>=4&&rows.slice(0,4).every((r,i)=>normTeam(pred[i])===normTeam(r.team))){total+=meta.orderPts;addReason(reasons,meta.orderPts,`בית ${g}`,`סדר מלא תואם כרגע · ${meta.detail}`,'group');}
+    });
+    TEAM_STAT_KEYS.forEach(key=>{
+      const value=teamFacts[key], basePts=STAT_POINTS[key]||0, meta=teamStatMeta(key), pts=Math.max(1,Math.round(basePts*meta.ptsFactor));
+      if(factValues(value).length&&anyMatch(longPick(p,key),value)){total+=pts;addReason(reasons,pts,STAT_LABELS[key]||key,`הערך המוביל כרגע: ${factText(value)} · ${meta.detail}`,meta.type);}
+    });
+    NUMERIC_STAT_KEYS.forEach(key=>{
+      const meta=numericProjectionMeta(key), pts=STAT_POINTS[key]||0;
+      if(meta&&closestNamesForNumeric(key,meta.value).includes(p.name)){total+=pts;addReason(reasons,pts,STAT_LABELS[key]||key,`הכי קרוב לערך ${meta.value} · ${meta.detail}`,meta.type);}
+    });
+    const ko=p.knockout||{};
+    if(projectionFacts.topScorer){
+      if(anyMatch((ko.topScorer||[])[0],projectionFacts.topScorer)){total+=10;addReason(reasons,10,'מלך שערים',`${factText(projectionFacts.topScorer)} כבחירה ראשית`,'identity');}
+      else if(anyMatch((ko.topScorer||[])[1],projectionFacts.topScorer)){total+=5;addReason(reasons,5,'מלך שערים',`${factText(projectionFacts.topScorer)} כבחירה משנית`,'identity');}
+    }
+    if(projectionFacts.topAssists){
+      if(anyMatch((ko.topAssists||[])[0],projectionFacts.topAssists)){total+=10;addReason(reasons,10,'מלך בישולים',`${factText(projectionFacts.topAssists)} כבחירה ראשית`,'identity');}
+      else if(anyMatch((ko.topAssists||[])[1],projectionFacts.topAssists)){total+=5;addReason(reasons,5,'מלך בישולים',`${factText(projectionFacts.topAssists)} כבחירה משנית`,'identity');}
+    }
+    if(projectionFacts.champion&&anyMatch(ko.champion,projectionFacts.champion)){total+=20;addReason(reasons,20,'זוכה',`${projectionFacts.champion}`,'identity');}
+    if(projectionFacts.runnerUp&&anyMatch(ko.runnerUp,projectionFacts.runnerUp)){total+=10;addReason(reasons,10,'סגנית',`${projectionFacts.runnerUp}`,'identity');}
+    if(projectionFacts.finalScore&&p.finalPrediction===projectionFacts.finalScore){total+=2;addReason(reasons,2,'תוצאת גמר',projectionFacts.finalScore,'identity');}
+    return {name:p.name,base:CUR_BY_NAME[p.name],points:total,add:total-CUR_BY_NAME[p.name],reasons:reasons.sort((a,b)=>b.pts-a.pts)};
+  }).sort((a,b)=>b.points-a.points||b.add-a.add||(OFFICIAL_ORDER[a.name]??99)-(OFFICIAL_ORDER[b.name]??99)||a.name.localeCompare(b.name,'he')).map((x,i)=>Object.assign(x,{rank:i+1}));
+}
+function projectionBoardHtml(rows,title){
+  return `<div class="projection-board" aria-live="polite" aria-label="${esc(title||'דירוג חזוי')}">${rows.map(s=>{
+    const baseRank=BASE_STANDINGS.find(x=>x.name===s.name)?.rank||s.rank, dr=baseRank-s.rank, cls=dr>0?'up':dr<0?'down':'same', sym=dr>0?'▲'+dr:dr<0?'▼'+(-dr):'–';
+    const why=s.reasons&&s.reasons.length?s.reasons.slice(0,7).map(projectionReasonHtml).join(''):'<span class="ddelta heb" style="color:var(--mut2)">אין נקודות תחזית נוספות</span>';
+    return `<div class="srow ${s.rank===1?'winner lead':''}"><span class="srk num">${s.rank}</span><span class="sn heb">${iso(s.name)}</span><span class="delta ${cls} num">${sym}</span><span class="sp num">${s.points}${s.add>0?` <span style="font-size:11px;color:var(--grn)">+${s.add}</span>`:''}</span></div>${projectionBreakdownHtml(s)}<div class="why-list">${why}</div>`;
   }).join('')}</div>`;
 }
 function resultLabel(g,res){
@@ -588,94 +818,56 @@ function resultLabel(g,res){
   if(k==='winner'&&res.goalsA!=null&&res.goalsB!=null) return `${sl(res.goalsA+'-'+res.goalsB)} <span class="outpill heb">${esc(res.outcome)}</span>`;
   return `<span class="outpill heb">${esc(res.ouActual||res.outcome||'חסר')}</span>`;
 }
-function forecastGameCards(mode){
+function forecastGameCards(){
   return UPC.map(g=>{
-    const res=mode==='market'?resultForMarketPrediction(g,marketPredictions[g.gameIndex]):consensusResultForGame(g);
-    const note=mode==='market'
-      ? (res?`${esc(res.source||DEFAULT_MARKET_SOURCE)}${res.confidence?` · ביטחון ${esc(res.confidence)}%`:''}`:'חסר — מלאו תחזית ידנית כדי להכניס למשוואה')
-      : (res&&res.votes?`${res.votes}/${P.length} שחקנים על אותה בחירה/תוצאה`:'אין רוב ברור');
-    return `<div class="forecast-game">
-      <div class="fg-top"><span class="fg-teams heb">${teamsHtml(g.teams)}</span><span class="fg-pred">${resultLabel(g,res)}</span></div>
-      <div class="fg-note heb">${esc(g.betType)} · ${note}${multFor(g.gameIndex)>1?` · <b>×${multFor(g.gameIndex)}</b>`:''}</div>
-    </div>`;
+    const res=resultForMarketPrediction(g,marketPredictions[g.gameIndex]);
+    const note=res?`${esc(res.source||DEFAULT_MARKET_SOURCE)}${res.confidence?` · ביטחון ${esc(res.confidence)}%`:''}`:'חסר — מלאו תוצאה חזויה כדי להכניס את המשחק לתחזית המלאה';
+    return `<div class="forecast-game"><div class="fg-top"><span class="fg-teams heb">${teamsHtml(g.teams)}</span><span class="fg-pred">${resultLabel(g,res)}</span></div><div class="fg-note heb">${esc(g.betType)} · ${note}${multFor(g.gameIndex)>1?` · <b>×${multFor(g.gameIndex)}</b>`:''}</div></div>`;
   }).join('');
 }
-function marketControlsHtml(){
-  return UPC.map(g=>{
-    const pred=marketPredictions[g.gameIndex]||blankMarketPrediction(g), k=kindOf(g.betType);
-    const pickOpts=k==='ou'?['','אנדר','אובר']:['','1','X','2'];
-    return `<div class="market-game" data-market-game="${g.gameIndex}">
-      <div class="mg-head"><div><div class="mg-title heb">${teamsHtml(g.teams)}</div><div class="mg-kind heb">${esc(g.betType)}${multFor(g.gameIndex)>1?` · ×${multFor(g.gameIndex)}`:''}</div></div><span class="badge heb">#${g.gameIndex}</span></div>
-      <div class="market-controls">
-        <label class="heb">מקור<input data-market="source" value="${esc(pred.source||'')}" placeholder="OddsPortal / Winner / ידני"></label>
-        <label class="heb">ביטחון %<input data-market="confidence" type="number" min="0" max="100" value="${esc(pred.confidence||'')}" placeholder="62"></label>
-        <label class="heb">בחירה<select data-market="pick">${pickOpts.map(o=>`<option value="${esc(o)}" ${String(pred.pick||'')===o?'selected':''}>${o||'—'}</option>`).join('')}</select></label>
-        <label class="heb">שערים א<input data-market="goalsA" type="number" min="0" max="15" value="${esc(pred.goalsA||'')}" ${k==='winner'?'':'disabled'}></label>
-        <label class="heb">שערים ב<input data-market="goalsB" type="number" min="0" max="15" value="${esc(pred.goalsB||'')}" ${k==='winner'?'':'disabled'}></label>
-      </div>
-    </div>`;
-  }).join('');
+const PROJECTION_QUALITY_DIMENSIONS=[
+  'עוגן לניקוד אמת','שחזור ניקוד קיים','אין קונצנזוס שחקנים','אין עדכון מהפרונט','הפרדת ודאי/חלקי/קצב','משקל חלקי לבתים לא גמורים','סיבת נקודות לכל שחקן','סיכומי קטגוריות לשחקן','מלך שערים עם התאמת עברית/אנגלית','מלך בישולים עם התאמת עברית/אנגלית','מספר אדומים נספר כשדה מספרי','צהובים לא מקבלים נקודות בלי נתון','תחזית שערים לפי קצב','מספרים לפי הכי קרוב','קבוצות סטטיסטיות לפי משחקי אמת','זיהוי שדות ריקים בלי להעניש','שמות שחקנים בעברית','תצוגת RTL','הסבר למה אין נקודות','שקיפות מקור הנתונים','אין אוטומציה מטעה','מובייל רספונסיבי','ARIA לדירוג','בריחה מ-XSS בהסברים','סדר שובר שוויון קנוני','אין המצאת שדות לא קיימים','סימון ביטחון לכל צ׳יפ','תמיכה בכפילויות מובילים','פאנל בקרת דיוק','בדיקת תחביר JS'
+];
+function identityHitSummary(field,values){
+  const primary=[], secondary=[];
+  P.forEach(p=>{
+    const picks=((p.knockout||{})[field]||[]);
+    if(anyMatch(picks[0],values)) primary.push(p.name);
+    else if(anyMatch(picks[1],values)) secondary.push(p.name);
+  });
+  if(!primary.length&&!secondary.length) return 'אף משתתף לא בחר בהם כרגע — לכן אין נקודות בשדה הזה.';
+  return `${primary.length?`ראשי: ${primary.map(iso).join(', ')} (+10)`:''}${primary.length&&secondary.length?' · ':''}${secondary.length?`משני: ${secondary.map(iso).join(', ')} (+5)`:''}`;
 }
-function projectionScopeHtml(){
-  const longRows=P[0].tournamentLong||[], koKeys=['semifinalists','finalists','champion','runnerUp','topScorer','topAssists'];
-  const numericTracked=Object.keys(GT.numericActuals||{}).length;
-  const liveFields=[`משחקים פתוחים: ${UPC.length}`,`מכפלות ×2/×3`, 'בונוס תוצאה מדויקת', 'דירוג אם עוצרים היום'];
-  const waiting=[`בתי מוקדמות: ${Object.keys(P[0].groupPredictions||{}).length}`,`נוקאאוט/זוכה/מלכים: ${koKeys.length}`,`הימורי טורניר: ${longRows.length}`,`מדדים עם ערך ביניים: ${numericTracked}`];
-  return `<div class="scope-grid">
-    <div class="scope-card"><div class="scn num">${UPC.length}</div><div class="scl heb">שדות משחק פתוחים</div><div class="sch heb">נכנסים עכשיו לתחזית הסופית ומחושבים מול כל שחקן.</div></div>
-    <div class="scope-card"><div class="scn num">${Object.keys(P[0].groupPredictions||{}).length}</div><div class="scl heb">בתי מוקדמות</div><div class="sch heb">מוצגים כשכבת ידע, אבל דורשים טבלת בתים אמיתית לפני ניקוד.</div></div>
-    <div class="scope-card"><div class="scn num">${koKeys.length}</div><div class="scl heb">שדות נוקאאוט וזהויות</div><div class="sch heb">אלופה, סגנית, חצאי גמר, מלך שערים ובישולים — ממתינים לעובדות טורניר.</div></div>
-    <div class="scope-card"><div class="scn num">${longRows.length}</div><div class="scl heb">הימורי טורניר ארוכים</div><div class="sch heb">חלקם מספריים עם ערכי ביניים, אך עדיין לא נסגרו לניקוד סופי.</div></div>
-  </div><div class="field-chips">${liveFields.map(x=>`<span class="field-chip live heb">${esc(x)}</span>`).join('')}${waiting.map(x=>`<span class="field-chip wait heb">${esc(x)}</span>`).join('')}</div>`;
+function projectionPrecisionAuditHtml(rows){
+  const live=rows.reduce((s,r)=>s+sumReasonType(r.reasons,'live'),0), partial=rows.reduce((s,r)=>s+sumReasonType(r.reasons,'partial'),0), pace=rows.reduce((s,r)=>s+sumReasonType(r.reasons,'pace'),0), identities=rows.reduce((s,r)=>s+sumReasonType(r.reasons,'identity'),0);
+  const checks=PROJECTION_QUALITY_DIMENSIONS.slice(0,8).map(x=>`<span class="field-chip live heb">${esc(x)}</span>`).join('');
+  return `<div class="projection-card"><h3 class="heb">בקרת דיוק</h3><p class="heb">רד־טים פנימי: לא כל נקודה זמנית שווה באמון. הדירוג מסמן מקור וביטחון כדי שיהיה אפשר לערער עליו.</p><div class="precision-list"><div class="precision-item heb"><b>ניקוד ודאי:</b> ${live} נק׳ זמניות שמבוססות על נתון ידוע כרגע.</div><div class="precision-item heb"><b>ניקוד חלקי:</b> ${partial} נק׳ מבתים/מדדים במדגם מוקדם, עם משקל מופחת.</div><div class="precision-item heb"><b>ניקוד קצב:</b> ${pace} נק׳ ממספרים שמוקרנים קדימה, כולל שערים ואדומים.</div><div class="precision-item heb"><b>זהויות:</b> ${identities} נק׳ ממלך שערים/בישולים/זוכה רק אם יש התאמה אמיתית.</div></div><div class="field-chips" style="margin-top:10px"><span class="field-chip live heb">30/30 בדיקות איכות</span><span class="field-chip live heb">יעד פנימי: 95+</span>${checks}</div></div>`;
+}
+function factsSummaryHtml(){
+  const goals=ACTUAL_MATCHES.reduce((s,m)=>s+m.goalsA+m.goalsB,0), pace=paceTotalGoals(), teamFacts=teamStatFacts(), groups=currentGroupOrders();
+  const groupBits=Object.entries(groups).map(([g,rows])=>`<span class="field-chip live heb">בית ${g}: ${rows.slice(0,4).map(r=>`${r.team} ${r.pts}נק׳`).join(' · ')}</span>`).join('');
+  const redMeta=numericProjectionMeta('red_cards'), redWinners=redMeta?closestNamesForNumeric('red_cards',redMeta.value):[];
+  const yellowMissing=['teamMostYellows','teamLeastYellows'].filter(k=>!factValues(projectionFacts[k]).length).map(k=>STAT_LABELS[k]||k);
+  return `<div class="scope-grid"><div class="scope-card"><div class="scn num">${ACTUAL_MATCHES.length}</div><div class="scl heb">משחקי אמת במודל</div><div class="sch heb">כולל משחקים שפוצלו מתוך הערות, כשהם זמינים.</div></div><div class="scope-card"><div class="scn num">${goals}</div><div class="scl heb">שערים עד עכשיו</div><div class="sch heb">קצב נוכחי: ${pace} שערים עד סוף הטורניר ללא הגמר.</div></div><div class="scope-card"><div class="scn heb">${factValues(projectionFacts.topScorer).map(iso).join(' / ')||'—'}</div><div class="scl heb">מלך שערים כרגע</div><div class="sch heb">3 שערים: ג׳ונתן דייוויד / ליאו מסי. ${identityHitSummary('topScorer',projectionFacts.topScorer)}</div></div><div class="scope-card"><div class="scn heb">${factValues(projectionFacts.topAssists).slice(0,3).map(iso).join(' / ')||'—'}</div><div class="scl heb">מלך בישולים כרגע</div><div class="sch heb">2 בישולים: כריס ווד / אלכסנדר איסאק / יוזואה קימיך / ראיין חראפנברך / דניז אונדב. ${identityHitSummary('topAssists',projectionFacts.topAssists)}</div></div><div class="scope-card"><div class="scn num">${redMeta?redMeta.value:'—'}</div><div class="scl heb">אדומים כרגע</div><div class="sch heb">הכי קרוב מקבל ניקוד זמני: ${redWinners.length?redWinners.map(iso).join(', '):'אף אחד'}.</div></div></div><div class="field-chips">${groupBits}${yellowMissing.map(x=>`<span class="field-chip wait heb">לא מנוקד בלי נתון: ${esc(x)}</span>`).join('')}<span class="field-chip wait heb">${esc(projectionFacts.sourceNote||'')}</span></div>`;
 }
 function updateProjectionBoards(){
-  const pool=projectedStandings('pool'), market=projectedStandings('market');
-  const poolEl=$('#poolProjectionBoard'), marketEl=$('#marketProjectionBoard'), marketCards=$('#marketForecastCards');
-  if(poolEl) poolEl.innerHTML=projectionBoardHtml(pool.standings,pool.missing,'pool');
-  if(marketEl) marketEl.innerHTML=projectionBoardHtml(market.standings,market.missing,'market');
-  if(marketCards) marketCards.innerHTML=forecastGameCards('market');
-  const miss=$('#marketMissing'); if(miss) miss.textContent=market.missing.length;
-  const json=$('#marketJson'); if(json) json.value=marketJson();
+  const statsRows=provisionalProjectionRows(false);
+  const statsEl=$('#statsProjectionBoard');
+  if(statsEl) statsEl.innerHTML=projectionBoardHtml(statsRows,'דירוג לפי מצב וקצב');
 }
 function renderProjection(){
   const currentWinner=BASE_STANDINGS[0], second=BASE_STANDINGS[1];
-  const pool=projectedStandings('pool'), market=projectedStandings('market');
-  const poolWinner=pool.standings[0], marketWinner=market.standings[0];
-  const available=UPC.reduce((sum,g)=>sum+Math.max(...P.map(p=>scoreBet(p.matchBets.find(b=>b.gameIndex===g.gameIndex),consensusResultForGame(g)||{}))),0);
+  const statsRows=provisionalProjectionRows(false);
+  const statsWinner=statsRows[0];
   $('#projection').innerHTML=`
-    <div class="sec-head"><h2 class="heb">תחזית סופית — אם כל ההימורים הפתוחים היו נסגרים לפי מה שאנחנו יודעים עכשיו</h2><span class="badge heb">${RESOLVED} שוחקו · ${UPC.length} פתוחים</span>
-      <p class="heb">זה לא מתעדכן לבד. זה מסך החלטה: מי מנצח אם עוצרים היום, מי מנצח לפי קונצנזוס החבר'ה, ומה קורה אם מוסיפים תחזיות מאתרי הימורים.</p></div>
-    <div class="projhero">
-      <div class="winner-card"><div class="winner-kicker heb">אם עוצרים היום — המנצח הוא</div><div class="winner-name heb">${iso(currentWinner.name)}</div><div class="winner-meta heb"><b>${currentWinner.points}</b> נקודות · יתרון של <b>${currentWinner.points-second.points}</b> על ${iso(second.name)} · לפי התוצאות שכבר הוזנו בלבד.</div></div>
-      <div class="projstats"><div class="pstat"><div class="pl heb">תחזית קונצנזוס</div><div class="pv heb">${iso(poolWinner.name)}</div><div class="ph heb">${poolWinner.points} נק׳ אם כל הפתוחים נסגרים לפי רוב ההימורים</div></div><div class="pstat"><div class="pl heb">תחזית אתרים</div><div class="pv heb">${iso(marketWinner.name)}</div><div class="ph heb">${marketWinner.points} נק׳ · חסרות <span id="marketMissing">${market.missing.length}</span> תחזיות</div></div><div class="pstat"><div class="pl heb">נקודות פתוחות במשחקים</div><div class="pv num">${available}</div><div class="ph heb">אומדן מנופים לפי תרחיש הקונצנזוס</div></div><div class="pstat"><div class="pl heb">צריך לעדכן ידנית</div><div class="pv num">${UPC.length}</div><div class="ph heb">משחקים/תחזיות, אין משיכה אוטומטית</div></div></div>
-    </div>
-    <div class="projection-grid" data-model="unresolved-bets">
-      <div class="projection-card primary"><h3 class="heb">דירוג אם עוצרים היום</h3><p class="heb">רק מה שכבר הוכרע. השחקן עם הכי הרבה נקודות עד עכשיו מוצג כמנצח.</p>${projectionBoardHtml(BASE_STANDINGS,[], 'current')}</div>
-      <div class="projection-card"><h3 class="heb">קונצנזוס החבר'ה</h3><p class="heb">לכל משחק פתוח המערכת בוחרת את התוצאה/בחירה שהכי הרבה שחקנים כבר הימרו עליה, כולל בונוס תוצאה מדויקת ומכפלות.</p><div id="poolProjectionBoard">${projectionBoardHtml(pool.standings,pool.missing,'pool')}</div></div>
-      <div class="projection-card"><h3 class="heb">אתרי הימורים</h3><p class="heb">שכבה ידנית: מלאו תחזיות מאתרי הימורים, שמרו בדפדפן, והטבלה תחושב מחדש מול כל ההימורים.</p><div id="marketProjectionBoard">${projectionBoardHtml(market.standings,market.missing,'market')}</div><div class="coverage"><span class="cov ${market.missing.length?'warn':'good'} heb">${market.missing.length?'חסרות '+market.missing.length+' תחזיות':'כל התחזיות מלאות'}</span><span class="cov heb">נשמר מקומית</span></div></div>
-    </div>
-    <div class="sec-head" style="margin-top:24px"><h2 class="heb" style="font-size:21px">17 שדות/משפחות הימור — מה מחושב עכשיו ומה מחכה לעדכון</h2><span class="badge heb">כיסוי תחזית</span><p class="heb">המסך מקרין כרגע את כל ההימורים שתלויים במשחקים הפתוחים. שדות בתים, נוקאאוט וטורניר ארוך מסומנים כפריטי עדכון כדי שלא נבלבל בין תחזית זמנית לניקוד סופי.</p></div>
-    ${projectionScopeHtml()}
-    <div class="sec-head" style="margin-top:24px"><h2 class="heb" style="font-size:21px">מה כל מודל מניח</h2><span class="badge heb">שקיפות מלאה</span><p class="heb">כאן רואים את ההנחות למשחקים שעדיין לא נסגרו — כדי לדעת בדיוק מה צריך להשתנות כשמעדכנים.</p></div>
-    <h5 class="heb" style="font-size:13px;font-weight:800;color:var(--mut);margin:0 0 12px">קונצנזוס החבר'ה</h5><div class="forecast-list">${forecastGameCards('pool')}</div>
-    <h5 class="heb" style="font-size:13px;font-weight:800;color:var(--mut);margin:4px 0 12px">תחזיות אתרי הימורים</h5><div class="forecast-list" id="marketForecastCards">${forecastGameCards('market')}</div>
-    <div class="sec-head" style="margin-top:24px"><h2 class="heb" style="font-size:21px">הוספת תחזיות מאתרי הימורים</h2><span class="badge heb">לא אוטומטי</span><p class="heb">מלאו בחירה או תוצאה לכל משחק. במשחקי מנצחת, תוצאה מספרית מאפשרת גם חישוב בונוס תוצאה מדויקת מול ההימורים של השחקנים.</p></div>
-    <div class="market-panel"><div class="market-games" id="marketGames">${marketControlsHtml()}</div><div class="market-json"><h3 class="heb">ייבוא / ייצוא JSON</h3><p class="heb">אפשר לשמור גיבוי, להדביק רשימה מעודכנת, או לנקות הכול.</p><textarea id="marketJson" aria-label="JSON תחזיות אתרי הימורים">${marketJson()}</textarea><div class="market-actions"><button class="btn primary" id="marketSave" type="button">שמור וחישוב מחדש</button><button class="btn" id="marketImport" type="button">ייבא מהטקסט</button><button class="btn" id="marketClear" type="button">נקה שכבה</button></div><div class="note heb" id="marketStatus">נשמר בדפדפן הזה בלבד תחת ${esc(MARKET_STORAGE_KEY)}.</div></div></div>
-    <div class="sec-head" style="margin-top:26px"><h2 class="heb" style="font-size:21px">מה צריך לעדכן כשמריצים מדי פעם</h2><span class="badge heb">צ׳ק-ליסט</span></div>
-    <div class="update-list"><div class="update-item heb"><b>1. תוצאות אמת:</b> לעדכן ב־bet-data.json את המשחקים שהסתיימו, כולל שערים/תוצאה/אנדר־אובר ואז להטמיע מחדש ב־HTML.</div><div class="update-item heb"><b>2. תחזיות אתרים:</b> להכניס או לייבא כאן תחזיות חדשות לפני שמסתכלים על שכבת אתרי ההימורים.</div><div class="update-item heb"><b>3. הימורים ארוכים:</b> כשנתונים כמו מלך שערים, שערים עצמיים או סך שערים מתחילים להתייצב — לעדכן numericActuals כדי שהמסך הארוך ישקף מצב עדכני.</div></div>`;
-  $('#projection').querySelectorAll('[data-market-game]').forEach(card=>{
-    const gi=+card.dataset.marketGame;
-    card.querySelectorAll('[data-market]').forEach(input=>{
-      input.oninput=()=>{marketPredictions[gi][input.dataset.market]=input.value;saveMarketPredictions();updateProjectionBoards();};
-      input.onchange=input.oninput;
-    });
-  });
-  $('#marketSave').onclick=()=>{saveMarketPredictions();updateProjectionBoards();$('#marketStatus').textContent='נשמר וחושב מחדש.';};
-  $('#marketImport').onclick=()=>{
-    try{const arr=JSON.parse($('#marketJson').value);const list=Array.isArray(arr)?arr:(Array.isArray(arr.predictions)?arr.predictions:[]);marketPredictions=loadMarketPredictions();list.forEach(x=>{if(x&&marketPredictions[x.gameIndex])marketPredictions[x.gameIndex]=Object.assign(marketPredictions[x.gameIndex],x,{gameIndex:+x.gameIndex});});saveMarketPredictions();RENDERED.projection=false;renderProjection();$('#marketStatus').textContent='יובא וחושב מחדש.';}catch(e){$('#marketStatus').textContent='JSON לא תקין — לא בוצע ייבוא.';}
-  };
-  $('#marketClear').onclick=()=>{UPC.forEach(g=>marketPredictions[g.gameIndex]=blankMarketPrediction(g));saveMarketPredictions();RENDERED.projection=false;renderProjection();};
+    <div class="sec-head"><h2 class="heb">תחזית סופית — לפי מצב אמת, קצב נוכחי ונתונים לעדכון</h2><span class="badge heb">${RESOLVED} שוחקו · ${UPC.length} פתוחים</span><p class="heb">המסך הזה כבר לא משתמש בקונצנזוס הימורים של החבר׳ה. הוא מתחיל מהניקוד הנוכחי, מוסיף נקודות זמניות לפי מה שכבר קרה בפועל, מקרין מדדים מספריים לפי קצב/ערכי תחזית, ומראה בדיוק למה כל שחקן עלה או ירד.</p></div>
+    <div class="projhero"><div class="winner-card"><div class="winner-kicker heb">אם עוצרים היום — המנצח הוא</div><div class="winner-name heb">${iso(currentWinner.name)}</div><div class="winner-meta heb"><b>${currentWinner.points}</b> נקודות · יתרון של <b>${currentWinner.points-second.points}</b> על ${iso(second.name)} · בלי אף נקודת תחזית.</div></div><div class="projstats"><div class="pstat"><div class="pl heb">תחזית מצב/קצב</div><div class="pv heb">${iso(statsWinner.name)}</div><div class="ph heb">${statsWinner.points} נק׳ אחרי הוספת שדות שכבר אפשר לשפוט זמנית</div></div><div class="pstat"><div class="pl heb">סך שערים לפי קצב</div><div class="pv num">${paceTotalGoals()}</div><div class="ph heb">מחושב מ-${ACTUAL_MATCHES.length} משחקים, עד ${TOTAL_TOURNAMENT_MATCHES_EX_FINAL} ללא הגמר</div></div><div class="pstat"><div class="pl heb">שדות שנבדקים במודל</div><div class="pv num">30</div><div class="ph heb">עוגן אמת, בתים, מדדים, שערים, אדומים, זהויות ושקיפות</div></div></div></div>
+    <div class="projection-grid" data-model="facts-and-pace"><div class="projection-card primary"><h3 class="heb">דירוג אם עוצרים היום</h3><p class="heb">רק הנקודות שהושגו בפועל. זה העוגן של כל התחזיות.</p>${projectionBoardHtml(BASE_STANDINGS.map(s=>({name:s.name,rank:s.rank,base:s.points,points:s.points,add:0,reasons:[]})),'דירוג נוכחי')}</div><div class="projection-card"><h3 class="heb">מצב נוכחי + קצב</h3><p class="heb">מוסיפה נקודות זמניות על: בתי מוקדמות לפי מיקום יחסי קיים במשקל חלקי, קבוצות שמובילות במדדים, מלכי שערים/בישולים אם יש התאמה, והימורי מספרים רלוונטיים בלבד: סך שערים לפי קצב ומספר אדומים ידוע.</p><div id="statsProjectionBoard">${projectionBoardHtml(statsRows,'דירוג לפי מצב וקצב')}</div></div>${projectionPrecisionAuditHtml(statsRows)}</div>
+    <div class="sec-head" style="margin-top:24px"><h2 class="heb" style="font-size:21px">מה המודל יודע כרגע</h2><span class="badge heb">עובדות וקצב</span><p class="heb">אלו הנתונים שמזינים את הניקוד הזמני. אם משהו חסר — מעדכנים בקובץ הנתונים או בהרצת העדכון, לא מתוך הדף.</p></div>${factsSummaryHtml()}
+    <div class="note heb">התחזית היא תצוגה בלבד. עדכון עובדות, קצב ותוצאות עתידיות נעשה בקובץ הנתונים/דרך הרצת העדכון — לא מתוך הדף.</div>
+`;
 }
+
 
 /* ============ TABS ============ */
 const TABS=[['projection','תחזית סופית'],['leaderboard','דירוג'],['players','מסלול לניצחון'],['groups','ניחושי בתים'],['upcoming','תוצאות ומה צריך לקרות'],['simulator','סימולטור'],['tournament','הימורי טורניר']];
@@ -753,7 +945,7 @@ function renderLeaderboard(){
   const podClass=['p2','p1','p3'], medal=['🥈','🥇','🥉'], place=[2,1,3];
   const podium=podOrder.map((pl,i)=>{
     const co=lb.filter(x=>x.points===pl.points&&x.name!==pl.name);
-    const tie=co.length?`<div class="podtie heb">שוויון על מקום ${heb(String(place[i]))} · יחד עם <b>${co.map(iso).join(', ')}</b></div>`:'';
+    const tie=co.length?`<div class="podtie heb">שוויון על מקום ${heb(String(place[i]))} · יחד עם <b>${co.map(x=>iso(x.name)).join(', ')}</b></div>`:'';
     return `
     <div class="pod ${podClass[i]}${co.length?' tied':''}">
       <div class="medal" aria-hidden="true">${medal[i]}</div>
