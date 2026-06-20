@@ -72,6 +72,9 @@
   .pod .pname{font-size:19px;font-weight:850;margin-top:6px}
   .pod .ppts{font-size:34px;font-weight:850;margin-top:4px;font-variant-numeric:tabular-nums}
   .pod .plabel{font-size:11.5px;color:var(--mut2);font-weight:700;letter-spacing:.5px}
+  .pod .podtie{margin-top:9px;font-size:11px;font-weight:800;color:var(--violet);background:rgba(169,140,255,.16);padding:3px 10px;border-radius:7px;display:inline-block;line-height:1.35}
+  .pod .podtie b{font-weight:850}
+  .pod.tied{border-color:rgba(169,140,255,.42)}
   .pod.p1{background:linear-gradient(155deg,rgba(255,210,74,.20),var(--card2) 65%);border-color:rgba(255,210,74,.4);transform:translateY(-10px)}
   .pod.p1 .ppts{color:var(--gold)}
   .pod.p2{background:linear-gradient(155deg,rgba(207,224,255,.13),var(--card2) 65%);border-color:rgba(207,224,255,.25)}
@@ -747,14 +750,18 @@ function renderLeaderboard(){
   const leader=lb[0], gap=leader.points-lb[lb.length-1].points;
 
   const podOrder=[lb[1],lb[0],lb[2]];
-  const podClass=['p2','p1','p3'], medal=['🥈','🥇','🥉'];
-  const podium=podOrder.map((pl,i)=>`
-    <div class="pod ${podClass[i]}">
+  const podClass=['p2','p1','p3'], medal=['🥈','🥇','🥉'], place=[2,1,3];
+  const podium=podOrder.map((pl,i)=>{
+    const co=lb.filter(x=>x.points===pl.points&&x.name!==pl.name);
+    const tie=co.length?`<div class="podtie heb">שוויון על מקום ${heb(String(place[i]))} · יחד עם <b>${co.map(iso).join(', ')}</b></div>`:'';
+    return `
+    <div class="pod ${podClass[i]}${co.length?' tied':''}">
       <div class="medal" aria-hidden="true">${medal[i]}</div>
       <div class="pname heb">${iso(pl.name)}</div>
       <div class="ppts num">${pl.points}</div>
       <div class="plabel heb">נקודות</div>
-    </div>`).join('');
+      ${tie}
+    </div>`;}).join('');
 
   const rows=lb.map(pl=>{
     const r=pl.rank, top=r<=3;
