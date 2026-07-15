@@ -802,6 +802,16 @@ function koTeamHtml(team){
   const color=status==='חי'?'var(--grn)':(status==='הודחה'?'var(--red)':'var(--mut2)');
   return `${iso(team||'-')}${status?` <small style="color:${color};font-weight:800">(${status})</small>`:''}`;
 }
+function awardCandidateMeta(field,candidate){
+  const block=(((DATA.scenarioEngine||{}).identityCandidates||{})[field]||{});
+  return (block.candidates||[]).find(row=>anyMatch(candidate,[row.name,row.canonicalName]));
+}
+function awardCandidateHtml(field,candidate){
+  const meta=awardCandidateMeta(field,candidate);
+  if(!meta||meta.eligible) return iso(candidate||'-');
+  const label=String(meta.teamStatus).toLowerCase()==='eliminated'?'הודח · לא אפשרי':'לא אפשרי';
+  return `${iso(candidate||'-')} <small title="${esc(meta.exclusionReason||'אין מסלול ריאלי לזכייה')}" style="color:var(--red);font-weight:800">(${label})</small>`;
+}
 function livePrimarySemis(ko){
   const primary=(ko.semifinalists||[]).slice(0,4);
   return primary.filter(t=>teamStatus(t)==='חי');
@@ -999,7 +1009,7 @@ globalThis.SCENARIO_ENGINE=(()=>{
     return 0;
   }
   function deriveAwardEligibility(candidate){
-    const currentTally=Number(candidate&&candidate.currentTally)||0,leaderTally=Number(candidate&&candidate.leaderTally)||0,remainingMatches=Math.max(0,Number(candidate&&candidate.remainingMatches)||0),perMatchContributionCap=Math.max(0,Number(candidate&&candidate.perMatchContributionCap)||0),maximumReachableTally=currentTally+remainingMatches*perMatchContributionCap,eligible=maximumReachableTally>=leaderTally;
+    const currentTally=Number(candidate&&candidate.currentTally)||0,leaderTally=Number(candidate&&candidate.leaderTally)||0,remainingMatches=Math.max(0,Number(candidate&&candidate.remainingMatches)||0),perMatchContributionCap=Math.max(0,Number(candidate&&candidate.perMatchContributionCap)||0),maximumReachableTally=currentTally+remainingMatches*perMatchContributionCap,eliminated=String(candidate&&candidate.teamStatus).toLowerCase()==='eliminated',eligible=eliminated?currentTally>=leaderTally:maximumReachableTally>=leaderTally;
     return Object.assign({},candidate,{currentTally,leaderTally,remainingMatches,perMatchContributionCap,maximumReachableTally,eligible,exclusionReason:eligible?'':(String(candidate&&candidate.teamStatus).toLowerCase()==='eliminated'?`הנבחרת הודחה עם ${currentTally}, מתחת למוביל על ${leaderTally}`:`תקרה של ${maximumReachableTally}, מתחת למוביל על ${leaderTally}`)});
   }
   function uniqueOptions(options){
@@ -1550,7 +1560,8 @@ function renderPlayers(){
       <span class="gpred heb">זוכה משנית: <b>${koTeamHtml(ko.runnerUp||'-')}</b></span>
       <span class="gpred heb">חצי ראשי חי: <b>${liveSemis.length}/4</b> ${liveSemis.length?liveSemis.map(iso).join(' / '):''}</span>
       <span class="gpred heb">פיינליסטיות: <b>${(ko.finalists||[]).map(koTeamHtml).join(' / ')||'—'}</b></span>
-      <span class="gpred heb">מלך שערים: <b>${iso((ko.topScorer||[]).join('/'))}</b></span>
+      <span class="gpred heb">מלך שערים: <b>${(ko.topScorer||[]).map(v=>awardCandidateHtml('topScorer',v)).join(' / ')||'—'}</b></span>
+      <span class="gpred heb">מלך בישולים: <b>${(ko.topAssists||[]).map(v=>awardCandidateHtml('topAssists',v)).join(' / ')||'—'}</b></span>
       <span class="gpred heb">גמר חזוי: <b>${p.finalPrediction?sl(p.finalPrediction):'—'}</b></span>`;
 
     return `<div class="card pcard">
@@ -1904,10 +1915,10 @@ function koTally(getVal){
   return Object.entries(tally).sort((a,b)=>b[1]-a[1]).map(([n,c])=>[disp[n],c]);
 }
 /* render a consensus card: title + top pick + full vote tally */
-function koCard(label, entries, unit, teamField=false){
+function koCard(label, entries, unit, teamField=false, awardField=''){
   if(!entries.length) return `<div class="kocard"><div class="kl heb">${esc(label)}</div><div class="kotop heb" style="color:var(--mut2)">לא נוחש</div></div>`;
   const top=entries[0];
-  const nameHtml=nm=>teamField?koTeamHtml(nm):iso(nm);
+  const nameHtml=nm=>teamField?koTeamHtml(nm):(awardField?awardCandidateHtml(awardField,nm):iso(nm));
   const tallyHtml=entries.map(([nm,c],i)=>`<span class="kt ${i===0?'lead':''} heb">${nameHtml(nm)} <b>${c}</b></span>`).join('');
   return `<div class="kocard">
     <div class="kl heb">${esc(label)}</div>
@@ -1927,8 +1938,8 @@ function knockoutConsensus(){
     <div class="kogrid">
       ${koCard('זוכה (אלופה)',champ,'בחרו',true)}
       ${koCard('זוכה משנית',runner,'בחרו',true)}
-      ${koCard('מלך שערים',scorer,'הזכירו')}
-      ${koCard('מלך בישולים',assists,'הזכירו')}
+      ${koCard('מלך שערים',scorer,'הזכירו',false,'topScorer')}
+      ${koCard('מלך בישולים',assists,'הזכירו',false,'topAssists')}
       ${koCard('פיינליסטיות',finalists,'הזכירו',true)}
       ${koCard('חצי גמר',semis,'הזכירו',true)}
     </div>`;
